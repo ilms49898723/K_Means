@@ -26,7 +26,7 @@ public class FileUtility {
         }
     }
 
-    public static void append(String source, String destination) {
+    public static void append(String destination, String source) {
         try {
             FileSystem fileSystem = FileSystem.get(new Configuration());
             Path in = new Path(source);

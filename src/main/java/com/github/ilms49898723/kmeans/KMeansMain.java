@@ -110,7 +110,7 @@ public class KMeansMain extends Configured implements Tool {
                     job.waitForCompletion(true);
                     FileUtility.remove(centroidFilename);
                     FileUtility.copyFile("output/part-r-00000", centroidFilename);
-                    FileUtility.append("output/cost-r-00000", costFilename);
+                    FileUtility.append(costFilename, "output/cost-r-00000");
                 }
             }
         }
