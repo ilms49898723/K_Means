@@ -64,27 +64,28 @@ public class KMeansMain extends Configured implements Tool {
 
     @Override
     public int run(String[] args) throws Exception {
-        if (args.length != 3) {
-            System.err.println("usage: kmeans <data> <c1> <c2>");
+        if (args.length < 2) {
+            System.err.println("usage: kmeans <data> <centroid> [<centroid> ...]");
             return 1;
         }
         FileUtility.remove("centroids");
+        FileUtility.remove("costs");
         FileUtility.mkdir("centroids");
-        FileUtility.copyFile(args[1], "centroids/c1-L1");
-        FileUtility.copyFile(args[1], "centroids/c1-L2");
-        FileUtility.copyFile(args[2], "centroids/c2-L1");
-        FileUtility.copyFile(args[2], "centroids/c2-L2");
         FileUtility.mkdir("costs");
-        FileUtility.touch("costs/cost1-L1");
-        FileUtility.touch("costs/cost1-L2");
-        FileUtility.touch("costs/cost2-L1");
-        FileUtility.touch("costs/cost2-L2");
+        ArrayList<String> centroidInputFiles = new ArrayList<>();
+        for (int i = 1; i < args.length; ++i) {
+            FileUtility.copyFile(args[i], "centroids/" + args[i] + "-L1");
+            FileUtility.copyFile(args[i], "centroids/" + args[i] + "-L2");
+            FileUtility.touch("costs/cost-" + args[i] + "-L1");
+            FileUtility.touch("costs/cost-" + args[i] + "-L2");
+            centroidInputFiles.add(args[i]);
+        }
         for (int i = 0; i < KMeansMain.MAX_ITER; ++i) {
-            for (int centroidsIndex = 1; centroidsIndex <= 2; ++centroidsIndex) {
+            for (String inputFilename : centroidInputFiles) {
                 for (int norm = 1; norm <= 2; ++norm) {
                     FileUtility.remove("output");
-                    String centroidFilename = "centroids/c" + centroidsIndex + "-L" + norm;
-                    String costFilename = "costs/cost" + centroidsIndex + "-L" + norm;
+                    String centroidFilename = "centroids/" + inputFilename + "-L" + norm;
+                    String costFilename = "costs/cost-" + inputFilename + "-L" + norm;
                     initializeCentroids(centroidFilename);
                     Configuration configuration = getConf();
                     Configuration jConf = new Configuration(configuration);
