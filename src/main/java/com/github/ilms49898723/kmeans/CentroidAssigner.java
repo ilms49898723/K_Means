@@ -88,6 +88,9 @@ public class CentroidAssigner {
             int size = 0;
             for (PointPosition pointPosition : values) {
                 mCost += mCentroids.get(key.get()).distanceFrom(pointPosition, mNorm);
+                context.write(NullWritable.get(), new Text(
+                        "out " + pointPosition.toString()
+                ));
                 for (int i = 0; i < pointPosition.size(); ++i) {
                     if (centroid.size() < i + 1) {
                         centroid.add(0.0);
