@@ -6,6 +6,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class CentroidAssigner {
     }
 
     public static class CentroidReducer extends Reducer<IntWritable, PointPosition, NullWritable, Text> {
+        private MultipleOutputs<NullWritable, Text> mMultipleOutputs;
         private ArrayList<PointPosition> mCentroids;
         private int mNorm;
         private double mCost;
@@ -67,6 +69,7 @@ public class CentroidAssigner {
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
+            mMultipleOutputs = new MultipleOutputs<>(context);
             mCentroids = new ArrayList<>();
             mCost = 0.0;
             Configuration conf = context.getConfiguration();
@@ -105,7 +108,7 @@ public class CentroidAssigner {
         protected void cleanup(Context context) throws IOException, InterruptedException {
             super.cleanup(context);
             String costString = "Cost " + mCost;
-            context.write(NullWritable.get(), new Text(costString));
+            mMultipleOutputs.write("cost", NullWritable.get(), new Text(costString));
         }
     }
 }

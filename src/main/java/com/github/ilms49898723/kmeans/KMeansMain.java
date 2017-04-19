@@ -7,11 +7,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 
 import java.io.BufferedReader;
@@ -90,6 +91,7 @@ public class KMeansMain extends Configured implements Tool {
         job.setOutputValueClass(TextOutputFormat.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[3]));
+        MultipleOutputs.addNamedOutput(job, "cost", TextOutputFormat.class, NullWritable.class, Text.class);
         job.waitForCompletion(true);
         return 0;
     }
