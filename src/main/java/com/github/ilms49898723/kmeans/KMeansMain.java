@@ -7,7 +7,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -15,75 +14,12 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class KMeansMain extends Configured implements Tool {
-    private static class PointPosition implements Writable, StringWritable {
-        private ArrayList<Double> mValues;
-
-        public PointPosition() {
-            mValues = new ArrayList<>();
-        }
-
-        public void add(double value) {
-            mValues.add(value);
-        }
-
-        public double get(int index) {
-            return mValues.get(index);
-        }
-
-        public ArrayList<Double> getAll() {
-            return mValues;
-        }
-
-        public void set(int index, double value) {
-            mValues.set(index, value);
-        }
-
-        public void setAll(ArrayList<Double> values) {
-            mValues = new ArrayList<>();
-            mValues.addAll(values);
-        }
-
-        @Override
-        public void write(DataOutput out) throws IOException {
-            out.writeInt(mValues.size());
-            for (double value : mValues) {
-                out.writeDouble(value);
-            }
-        }
-
-        @Override
-        public void readFields(DataInput in) throws IOException {
-            int size = in.readInt();
-            for (int i = 0; i < size; ++i) {
-                mValues.add(in.readDouble());
-            }
-        }
-
-        @Override
-        public String writeToString() {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(mValues.size());
-            for (Double value : mValues) {
-                stringBuilder.append(" ").append(value);
-            }
-            return stringBuilder.toString();
-        }
-
-        @Override
-        public void restoreFromString(String source) {
-            String[] tokens = source.split("\\s+");
-            int size = Integer.parseInt(tokens[0]);
-            mValues = new ArrayList<>();
-            for (int i = 1; i <= size; ++i) {
-                mValues.add(Double.parseDouble(tokens[i]));
-            }
-        }
-    }
-
     public static final int K = 2;
     public static final int MAX_ITER = 1;
 
@@ -140,6 +76,7 @@ public class KMeansMain extends Configured implements Tool {
         Configuration configuration = getConf();
         Configuration jConf = new Configuration(configuration);
         jConf.setStrings("Centroids", generateCentroidStringArray(0));
+        jConf.setInt("Norm", 1);
         Job job = Job.getInstance(jConf, "K-Means");
         job.setJarByClass(Main.class);
         job.setJobName("K Means");
