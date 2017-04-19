@@ -22,77 +22,91 @@ import java.util.ArrayList;
 
 public class KMeansMain extends Configured implements Tool {
     public static final int K = 2;
-    public static final int MAX_ITER = 1;
+    public static final int MAX_ITER = 2;
 
-    private ArrayList<ArrayList<PointPosition>> mCentroids;
+    private ArrayList<PointPosition> mCentroid;
 
-    private void initializeCentroids(String c1, String c2) {
+    private void initializeCentroids(String c) {
         try {
-            mCentroids = new ArrayList<>();
-            mCentroids.add(new ArrayList<>());
-            mCentroids.add(new ArrayList<>());
+            mCentroid = new ArrayList<>();
             FileSystem fileSystem = FileSystem.get(new Configuration());
-            Path[] paths = { new Path(c1), new Path(c2) };
-            for (int i = 0; i < 2; ++i) {
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(fileSystem.open(paths[i]))
-                );
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (line.isEmpty()) {
-                        continue;
-                    }
-                    String[] tokens = line.split("\\s+");
-                    PointPosition pointPosition = new PointPosition();
-                    for (String token : tokens) {
-                        pointPosition.add(Double.parseDouble(token));
-                    }
-                    mCentroids.get(i).add(pointPosition);
+            Path path = new Path(c);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(fileSystem.open(path))
+            );
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isEmpty()) {
+                    continue;
                 }
-                reader.close();
+                String[] tokens = line.split("\\s+");
+                PointPosition pointPosition = new PointPosition();
+                for (String token : tokens) {
+                    pointPosition.add(Double.parseDouble(token));
+                }
+                mCentroid.add(pointPosition);
             }
+            reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private String[] generateCentroidStringArray(int index) {
+    private String[] generateCentroidStringArray() {
         ArrayList<String> strings = new ArrayList<>();
-        for (int i = 0; i < mCentroids.get(index).size(); ++i) {
-            strings.add(mCentroids.get(index).get(i).writeToString());
+        for (int i = 0; i < mCentroid.size(); ++i) {
+            strings.add(mCentroid.get(i).writeToString());
         }
-        String[] result = new String[mCentroids.get(index).size()];
+        String[] result = new String[mCentroid.size()];
         result = strings.toArray(result);
         return result;
     }
 
     @Override
     public int run(String[] args) throws Exception {
-        if (args.length != 4) {
-            System.err.println("usage: kmeans <data> <c1> <c2> <output>");
+        if (args.length != 3) {
+            System.err.println("usage: kmeans <data> <c1> <c2>");
             return 1;
         }
-        Cleaner.remove(args[3]);
-        initializeCentroids(args[1], args[2]);
-        Configuration configuration = getConf();
-        Configuration jConf = new Configuration(configuration);
-        jConf.setStrings("Centroids", generateCentroidStringArray(0));
-        jConf.setInt("Norm", 1);
-        Job job = Job.getInstance(jConf, "K-Means");
-        job.setJarByClass(Main.class);
-        job.setJobName("K Means");
-        job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(PointPosition.class);
-        job.setOutputKeyClass(NullWritable.class);
-        job.setOutputValueClass(Text.class);
-        job.setMapperClass(CentroidAssigner.CentroidMapper.class);
-        job.setReducerClass(CentroidAssigner.CentroidReducer.class);
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputValueClass(TextOutputFormat.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[3]));
-        MultipleOutputs.addNamedOutput(job, "cost", TextOutputFormat.class, NullWritable.class, Text.class);
-        job.waitForCompletion(true);
+        FileUtility.remove("centroids");
+        FileUtility.mkdir("centroids");
+        FileUtility.copyFile(args[1], "centroids/c1-1");
+        FileUtility.copyFile(args[1], "centroids/c1-2");
+        FileUtility.copyFile(args[2], "centroids/c2-1");
+        FileUtility.copyFile(args[2], "centroids/c2-2");
+        FileUtility.mkdir("costs");
+        FileUtility.touch("costs/cost");
+        for (int i = 0; i < KMeansMain.MAX_ITER; ++i) {
+            for (int centroidsIndex = 1; centroidsIndex <= 2; ++centroidsIndex) {
+                for (int norm = 1; norm <= 2; ++norm) {
+                    FileUtility.remove("output");
+                    String centroidFilename = "centroids/c" + centroidsIndex + "-" + norm;
+                    initializeCentroids(centroidFilename);
+                    Configuration configuration = getConf();
+                    Configuration jConf = new Configuration(configuration);
+                    jConf.setStrings("Centroids", generateCentroidStringArray());
+                    jConf.setInt("Norm", norm);
+                    Job job = Job.getInstance(jConf, "K-Means");
+                    job.setJarByClass(Main.class);
+                    job.setMapOutputKeyClass(IntWritable.class);
+                    job.setMapOutputValueClass(PointPosition.class);
+                    job.setOutputKeyClass(NullWritable.class);
+                    job.setOutputValueClass(Text.class);
+                    job.setMapperClass(CentroidAssigner.CentroidMapper.class);
+                    job.setReducerClass(CentroidAssigner.CentroidReducer.class);
+                    job.setInputFormatClass(TextInputFormat.class);
+                    job.setOutputValueClass(TextOutputFormat.class);
+                    job.setNumReduceTasks(1);
+                    FileInputFormat.addInputPath(job, new Path(args[0]));
+                    FileOutputFormat.setOutputPath(job, new Path("output"));
+                    MultipleOutputs.addNamedOutput(job, "cost", TextOutputFormat.class, NullWritable.class, Text.class);
+                    job.waitForCompletion(true);
+                    FileUtility.remove(centroidFilename);
+                    FileUtility.copyFile("output/part-r-00000", centroidFilename);
+                    FileUtility.append("output/cost-r-00000", "costs/cost");
+                }
+            }
+        }
         return 0;
     }
 }
