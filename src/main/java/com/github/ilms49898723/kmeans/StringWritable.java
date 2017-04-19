@@ -1,7 +1,7 @@
 package com.github.ilms49898723.kmeans;
 
 public interface StringWritable {
-    public String writeToString();
+    String writeToString();
 
-    public void restoreFromString(String source);
+    void restoreFromString(String source);
 }
