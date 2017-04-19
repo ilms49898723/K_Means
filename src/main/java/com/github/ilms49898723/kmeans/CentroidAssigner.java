@@ -72,12 +72,12 @@ public class CentroidAssigner {
         @Override
         protected void reduce(IntWritable key, Iterable<PointPosition> values, Context context) throws IOException, InterruptedException {
             ArrayList<Double> centroid = new ArrayList<>();
-            for (int i = 0; i < KMeansMain.K; ++i) {
-                centroid.add(0.0);
-            }
             int size = 0;
             for (PointPosition pointPosition : values) {
                 for (int i = 0; i < pointPosition.size(); ++i) {
+                    if (centroid.size() < i + 1) {
+                        centroid.add(0.0);
+                    }
                     centroid.set(i, centroid.get(i) + pointPosition.get(i));
                 }
                 ++size;
