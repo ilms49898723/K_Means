@@ -109,6 +109,7 @@ public class CentroidAssigner {
             super.cleanup(context);
             String costString = "Cost " + mCost;
             mMultipleOutputs.write("cost", NullWritable.get(), new Text(costString));
+            mMultipleOutputs.close();
         }
     }
 }
