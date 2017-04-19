@@ -36,8 +36,12 @@ public class CentroidAssigner {
             if (value.toString().isEmpty()) {
                 return;
             }
-            String[] tokens = value.toString().split("\\s+");
-            PointPosition pointPosition = new PointPosition(tokens);
+            String[] tokens = value.toString().split(" ");
+            ArrayList<Double> values = new ArrayList<>();
+            for (String token : tokens) {
+                values.add(Double.parseDouble(token));
+            }
+            PointPosition pointPosition = new PointPosition(values);
             int minIndex = 0;
             double minDis = pointPosition.distanceFrom(mCentroids.get(0), mNorm);
             for (int i = 1; i < KMeansMain.K; ++i) {

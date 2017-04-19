@@ -135,6 +135,7 @@ public class KMeansMain extends Configured implements Tool {
             System.err.println("usage: kmeans <data> <c1> <c2> <output>");
             return 1;
         }
+        Cleaner.remove(args[3]);
         initializeCentroids(args[1], args[2]);
         Configuration configuration = getConf();
         Configuration jConf = new Configuration(configuration);
@@ -152,7 +153,10 @@ public class KMeansMain extends Configured implements Tool {
         job.setOutputValueClass(TextOutputFormat.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[3]));
-        job.waitForCompletion(true);
+        boolean result = job.waitForCompletion(true);
+        if (result) {
+            throw new Exception(Double.valueOf(jConf.getDouble("Cost", -1)).toString());
+        }
         return 0;
     }
 }
