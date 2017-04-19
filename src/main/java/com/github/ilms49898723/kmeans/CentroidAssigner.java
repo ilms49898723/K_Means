@@ -107,7 +107,8 @@ public class CentroidAssigner {
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
             super.cleanup(context);
-            String costString = "Cost " + mCost;
+            int iter = context.getConfiguration().getInt("Iter", -1);
+            String costString = iter + " " + mCost;
             mMultipleOutputs.write("cost", NullWritable.get(), new Text(costString));
             mMultipleOutputs.close();
         }

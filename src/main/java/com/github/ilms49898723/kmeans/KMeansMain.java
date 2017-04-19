@@ -70,22 +70,27 @@ public class KMeansMain extends Configured implements Tool {
         }
         FileUtility.remove("centroids");
         FileUtility.mkdir("centroids");
-        FileUtility.copyFile(args[1], "centroids/c1-1");
-        FileUtility.copyFile(args[1], "centroids/c1-2");
-        FileUtility.copyFile(args[2], "centroids/c2-1");
-        FileUtility.copyFile(args[2], "centroids/c2-2");
+        FileUtility.copyFile(args[1], "centroids/c1-L1");
+        FileUtility.copyFile(args[1], "centroids/c1-L2");
+        FileUtility.copyFile(args[2], "centroids/c2-L1");
+        FileUtility.copyFile(args[2], "centroids/c2-L2");
         FileUtility.mkdir("costs");
-        FileUtility.touch("costs/cost");
+        FileUtility.touch("costs/cost1-L1");
+        FileUtility.touch("costs/cost1-L2");
+        FileUtility.touch("costs/cost2-L1");
+        FileUtility.touch("costs/cost2-L2");
         for (int i = 0; i < KMeansMain.MAX_ITER; ++i) {
             for (int centroidsIndex = 1; centroidsIndex <= 2; ++centroidsIndex) {
                 for (int norm = 1; norm <= 2; ++norm) {
                     FileUtility.remove("output");
-                    String centroidFilename = "centroids/c" + centroidsIndex + "-" + norm;
+                    String centroidFilename = "centroids/c" + centroidsIndex + "-L" + norm;
+                    String costFilename = "costs/cost" + centroidsIndex + "-L" + norm;
                     initializeCentroids(centroidFilename);
                     Configuration configuration = getConf();
                     Configuration jConf = new Configuration(configuration);
                     jConf.setStrings("Centroids", generateCentroidStringArray());
                     jConf.setInt("Norm", norm);
+                    jConf.setInt("Iter", i + 1);
                     Job job = Job.getInstance(jConf, "K-Means");
                     job.setJarByClass(Main.class);
                     job.setMapOutputKeyClass(IntWritable.class);
@@ -103,7 +108,7 @@ public class KMeansMain extends Configured implements Tool {
                     job.waitForCompletion(true);
                     FileUtility.remove(centroidFilename);
                     FileUtility.copyFile("output/part-r-00000", centroidFilename);
-                    FileUtility.append("output/cost-r-00000", "costs/cost");
+                    FileUtility.append("output/cost-r-00000", costFilename);
                 }
             }
         }
