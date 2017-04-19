@@ -53,6 +53,9 @@ public class CentroidAssigner {
                 }
             }
             IntWritable index = new IntWritable(minIndex);
+            if (pointPosition.size() != 2) {
+                throw new IOException(pointPosition.toString());
+            }
             context.write(index, pointPosition);
         }
 
