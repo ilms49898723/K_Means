@@ -119,6 +119,16 @@ public class KMeansMain extends Configured implements Tool {
         }
     }
 
+    private String[] generateCentroidStringArray(int index) {
+        ArrayList<String> strings = new ArrayList<>();
+        for (int i = 0; i < mCentroids.get(index).size(); ++i) {
+            strings.add(mCentroids.get(index).get(i).writeToString());
+        }
+        String[] result = new String[mCentroids.get(index).size()];
+        result = strings.toArray(result);
+        return result;
+    }
+
     @Override
     public int run(String[] args) throws Exception {
         if (args.length != 4) {
@@ -127,7 +137,9 @@ public class KMeansMain extends Configured implements Tool {
         }
         initializeCentroids(args[1], args[2]);
         Configuration configuration = getConf();
-        Job job = Job.getInstance(configuration, "K-Means");
+        Configuration jConf = new Configuration(configuration);
+        jConf.setStrings("Centroids", generateCentroidStringArray(0));
+        Job job = Job.getInstance(jConf, "K-Means");
         job.setJarByClass(Main.class);
         job.setJobName("K Means");
         job.setMapOutputKeyClass(IntWritable.class);
