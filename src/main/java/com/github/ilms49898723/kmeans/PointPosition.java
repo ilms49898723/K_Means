@@ -105,4 +105,19 @@ public class PointPosition implements Writable, StringWritable {
             mValues.add(Double.parseDouble(tokens[i]));
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        boolean isFirst = true;
+        for (double value : mValues) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                stringBuilder.append(" ");
+            }
+            stringBuilder.append(value);
+        }
+        return stringBuilder.toString();
+    }
 }

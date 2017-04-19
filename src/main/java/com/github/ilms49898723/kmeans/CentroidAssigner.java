@@ -40,6 +40,9 @@ public class CentroidAssigner {
                 values.add(Double.parseDouble(token));
             }
             PointPosition pointPosition = new PointPosition(values);
+            if (pointPosition.size() != mCentroids.get(0).size()) {
+                throw new IOException("Size diff: " + pointPosition.size() + " " + mCentroids.get(0).size());
+            }
             int minIndex = 0;
             double minDis = pointPosition.distanceFrom(mCentroids.get(0), mNorm);
             for (int i = 1; i < KMeansMain.K; ++i) {
@@ -97,7 +100,7 @@ public class CentroidAssigner {
             for (double value : centroid) {
                 pointPosition.add(value / size);
             }
-            Text output = new Text(pointPosition.writeToString());
+            Text output = new Text(pointPosition.toString());
             context.write(NullWritable.get(), output);
         }
 
