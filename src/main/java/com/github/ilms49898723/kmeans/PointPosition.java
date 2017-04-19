@@ -74,6 +74,7 @@ public class PointPosition implements Writable, StringWritable {
 
     @Override
     public void readFields(DataInput in) throws IOException {
+        mValues = new ArrayList<>();
         int size = in.readInt();
         for (int i = 0; i < size; ++i) {
             mValues.add(in.readDouble());
