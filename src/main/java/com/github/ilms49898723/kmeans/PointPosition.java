@@ -14,12 +14,6 @@ public class PointPosition implements Writable, StringWritable {
         mValues = new ArrayList<>();
     }
 
-    public PointPosition(String[] centroidSources) {
-        for (String source : centroidSources) {
-            mValues.add(Double.parseDouble(source));
-        }
-    }
-
     public PointPosition(ArrayList<Double> values) {
         mValues = new ArrayList<>();
         mValues.addAll(values);

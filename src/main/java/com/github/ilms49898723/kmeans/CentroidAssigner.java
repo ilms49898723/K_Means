@@ -88,8 +88,13 @@ public class CentroidAssigner {
         @Override
         protected void reduce(IntWritable key, Iterable<PointPosition> values, Context context) throws IOException, InterruptedException {
             ArrayList<Double> centroid = new ArrayList<>();
+            ArrayList<PointPosition> myValues = new ArrayList<>();
+            for (PointPosition ps : values) {
+                PointPosition newOne = new PointPosition(ps.getAll());
+                myValues.add(newOne);
+            }
             int size = 0;
-            for (PointPosition pointPosition : values) {
+            for (PointPosition pointPosition : myValues) {
                 mCost += mCentroids.get(key.get()).distanceFrom(pointPosition, mNorm);
                 context.write(NullWritable.get(), new Text(
                         "out " + pointPosition.toString()
