@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 public class KMeansMain extends Configured implements Tool {
     public static final int K = 10;
-    public static final int MAX_ITER = 2;
+    public static final int MAX_ITER = 20;
 
     private ArrayList<PointPosition> mCentroid;
 
