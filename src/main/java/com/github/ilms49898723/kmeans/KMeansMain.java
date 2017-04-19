@@ -90,10 +90,7 @@ public class KMeansMain extends Configured implements Tool {
         job.setOutputValueClass(TextOutputFormat.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[3]));
-        boolean result = job.waitForCompletion(true);
-        if (result) {
-            throw new Exception(Double.valueOf(jConf.getDouble("Cost", -1)).toString());
-        }
+        job.waitForCompletion(true);
         return 0;
     }
 }

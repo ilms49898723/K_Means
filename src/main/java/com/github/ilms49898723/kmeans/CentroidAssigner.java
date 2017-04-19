@@ -13,14 +13,12 @@ import java.util.ArrayList;
 public class CentroidAssigner {
     public static class CentroidMapper extends Mapper<Object, Text, IntWritable, PointPosition> {
         private ArrayList<PointPosition> mCentroids;
-        private double mCost;
         private int mNorm;
 
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
             mCentroids = new ArrayList<>();
-            mCost = 0;
             Configuration conf = context.getConfiguration();
             mNorm = conf.getInt("Norm", -1);
             String[] centroidSources = conf.getStrings("Centroids");
@@ -51,7 +49,6 @@ public class CentroidAssigner {
                     minIndex = i;
                 }
             }
-            mCost += minDis;
             IntWritable index = new IntWritable(minIndex);
             context.write(index, pointPosition);
         }
@@ -59,14 +56,27 @@ public class CentroidAssigner {
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
             super.cleanup(context);
-            context.getConfiguration().setDouble("Cost", mCost);
         }
     }
 
     public static class CentroidReducer extends Reducer<IntWritable, PointPosition, NullWritable, Text> {
+        private ArrayList<PointPosition> mCentroids;
+        private int mNorm;
+        private double mCost;
+
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
+            mCentroids = new ArrayList<>();
+            mCost = 0.0;
+            Configuration conf = context.getConfiguration();
+            mNorm = conf.getInt("Norm", -1);
+            String[] centroidSources = conf.getStrings("Centroids");
+            for (String source : centroidSources) {
+                PointPosition pointPosition = new PointPosition();
+                pointPosition.restoreFromString(source);
+                mCentroids.add(pointPosition);
+            }
         }
 
         @Override
@@ -74,6 +84,7 @@ public class CentroidAssigner {
             ArrayList<Double> centroid = new ArrayList<>();
             int size = 0;
             for (PointPosition pointPosition : values) {
+                mCost += mCentroids.get(key.get()).distanceFrom(pointPosition, mNorm);
                 for (int i = 0; i < pointPosition.size(); ++i) {
                     if (centroid.size() < i + 1) {
                         centroid.add(0.0);
@@ -93,6 +104,8 @@ public class CentroidAssigner {
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
             super.cleanup(context);
+            String costString = "Cost " + mCost;
+            context.write(NullWritable.get(), new Text(costString));
         }
     }
 }
