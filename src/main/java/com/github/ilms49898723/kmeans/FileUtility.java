@@ -68,4 +68,13 @@ public class FileUtility {
             e.printStackTrace();
         }
     }
+
+    public static String removeExtension(String path) {
+        int index = path.lastIndexOf('.');
+        if (index == -1) {
+            return path;
+        } else {
+            return path.substring(0, index);
+        }
+    }
 }
