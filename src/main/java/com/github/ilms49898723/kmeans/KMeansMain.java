@@ -74,12 +74,12 @@ public class KMeansMain extends Configured implements Tool {
         FileUtility.mkdir("costs");
         ArrayList<String> centroidInputFiles = new ArrayList<>();
         for (int i = 1; i < args.length; ++i) {
-            args[i] = FileUtility.removeExtension(args[i]);
-            FileUtility.copyFile(args[i], "centroids/" + args[i] + "-L1");
-            FileUtility.copyFile(args[i], "centroids/" + args[i] + "-L2");
-            FileUtility.touch("costs/cost-" + args[i] + "-L1");
-            FileUtility.touch("costs/cost-" + args[i] + "-L2");
-            centroidInputFiles.add(args[i]);
+            String name = FileUtility.removeExtension(args[i]);
+            FileUtility.copyFile(args[i], "centroids/" + name + "-L1");
+            FileUtility.copyFile(args[i], "centroids/" + name + "-L2");
+            FileUtility.touch("costs/cost-" + name + "-L1");
+            FileUtility.touch("costs/cost-" + name + "-L2");
+            centroidInputFiles.add(name);
         }
         for (int i = 0; i < KMeansMain.MAX_ITER; ++i) {
             for (String inputFilename : centroidInputFiles) {
