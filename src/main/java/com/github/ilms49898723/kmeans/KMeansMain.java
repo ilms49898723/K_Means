@@ -75,8 +75,8 @@ public class KMeansMain extends Configured implements Tool {
         ArrayList<String> centroidInputFiles = new ArrayList<>();
         for (int i = 1; i < args.length; ++i) {
             String name = FileUtility.removeSlash(FileUtility.removeExtension(args[i]));
-            FileUtility.copyFile(args[i], "centroids/" + name + "-L1");
-            FileUtility.copyFile(args[i], "centroids/" + name + "-L2");
+            FileUtility.copyFile(args[i], "centroids/centroid-" + name + "-L1");
+            FileUtility.copyFile(args[i], "centroids/centroid-" + name + "-L2");
             FileUtility.touch("costs/cost-" + name + "-L1");
             FileUtility.touch("costs/cost-" + name + "-L2");
             centroidInputFiles.add(name);
@@ -85,7 +85,7 @@ public class KMeansMain extends Configured implements Tool {
             for (String inputFilename : centroidInputFiles) {
                 for (int norm = 1; norm <= 2; ++norm) {
                     FileUtility.remove("output");
-                    String centroidFilename = "centroids/" + inputFilename + "-L" + norm;
+                    String centroidFilename = "centroids/centroid-" + inputFilename + "-L" + norm;
                     String costFilename = "costs/cost-" + inputFilename + "-L" + norm;
                     initializeCentroids(centroidFilename);
                     Configuration configuration = getConf();
@@ -99,8 +99,8 @@ public class KMeansMain extends Configured implements Tool {
                     job.setMapOutputValueClass(PointPosition.class);
                     job.setOutputKeyClass(NullWritable.class);
                     job.setOutputValueClass(Text.class);
-                    job.setMapperClass(CentroidAssigner.CentroidMapper.class);
-                    job.setReducerClass(CentroidAssigner.CentroidReducer.class);
+                    job.setMapperClass(KMeansSolver.KMeansMapper.class);
+                    job.setReducerClass(KMeansSolver.KMeansReducer.class);
                     job.setInputFormatClass(TextInputFormat.class);
                     job.setOutputValueClass(TextOutputFormat.class);
                     job.setNumReduceTasks(1);

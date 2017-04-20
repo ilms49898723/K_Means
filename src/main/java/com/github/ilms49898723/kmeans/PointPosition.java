@@ -44,8 +44,11 @@ public class PointPosition implements Writable, StringWritable {
         return mValues.size();
     }
 
-    public double distanceFrom(PointPosition that, int norm) {
+    public double distanceFrom(PointPosition that, int norm) throws IOException {
         double sum = 0.0;
+        if (this.size() != that.size()) {
+            throw new IOException("Size differ: " + this.size() + " " + that.size());
+        }
         if (norm == 1) {
             int length = this.size();
             for (int i = 0; i < length; ++i) {
@@ -59,7 +62,7 @@ public class PointPosition implements Writable, StringWritable {
                 sum += diff * diff;
             }
         } else {
-            return -1;
+            throw new IOException("Invalid norm: " + norm);
         }
         return sum;
     }
@@ -75,8 +78,8 @@ public class PointPosition implements Writable, StringWritable {
     @Override
     public void readFields(DataInput in) throws IOException {
         mValues = new ArrayList<>();
-        int size = in.readInt();
-        for (int i = 0; i < size; ++i) {
+        int length = in.readInt();
+        for (int i = 0; i < length; ++i) {
             mValues.add(in.readDouble());
         }
     }
@@ -94,9 +97,9 @@ public class PointPosition implements Writable, StringWritable {
     @Override
     public void restoreFromString(String source) {
         String[] tokens = source.split("\\s+");
-        int size = Integer.parseInt(tokens[0]);
+        int length = Integer.parseInt(tokens[0]);
         mValues = new ArrayList<>();
-        for (int i = 1; i <= size; ++i) {
+        for (int i = 1; i <= length; ++i) {
             mValues.add(Double.parseDouble(tokens[i]));
         }
     }

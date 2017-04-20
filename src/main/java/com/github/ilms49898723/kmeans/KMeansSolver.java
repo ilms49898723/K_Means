@@ -11,8 +11,8 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class CentroidAssigner {
-    public static class CentroidMapper extends Mapper<Object, Text, IntWritable, PointPosition> {
+public class KMeansSolver {
+    public static class KMeansMapper extends Mapper<Object, Text, IntWritable, PointPosition> {
         private ArrayList<PointPosition> mCentroids;
         private int mNorm;
 
@@ -60,7 +60,7 @@ public class CentroidAssigner {
         }
     }
 
-    public static class CentroidReducer extends Reducer<IntWritable, PointPosition, NullWritable, Text> {
+    public static class KMeansReducer extends Reducer<IntWritable, PointPosition, NullWritable, Text> {
         private MultipleOutputs<NullWritable, Text> mMultipleOutputs;
         private ArrayList<PointPosition> mCentroids;
         private int mNorm;
